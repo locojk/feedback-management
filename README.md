@@ -9,7 +9,7 @@ npm run dev
 Backend:
 
 ```bash
-cd API
+cd api
 uvicorn main:app --reload
 ```
 
