@@ -15,6 +15,11 @@ export default function Bubble({
   message: { id: string; role: string; content: string };
   loading?: boolean;
 }) {
+
+  if (message.role === "system") {
+    return null; 
+  }
+  
   return (
     <div
       key={message.id}

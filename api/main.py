@@ -195,7 +195,7 @@ async def generate_guidance_response(user_input: str) -> str:
     )
     return response.choices[0].message.content
 
-@app.post("/chat/")
+@app.post("/chatbot/")
 async def handle_chat_request(query: ChatQuery):
     """
     Endpoint handling chat interactions
