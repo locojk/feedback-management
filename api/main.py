@@ -11,12 +11,17 @@ import re
 from datetime import datetime
 from typing import Optional
 import logging
+import random
 import async_timeout
 from logging.handlers import RotatingFileHandler
+import requests
+import threading
 
 
 MAX_RETRIES = 3
 RETRY_DELAY = 5  # seconds
+# API endpoint
+writing_url = "https://e-react-node-backend-22ed6864d5f3.herokuapp.com/table/doctor_message_hub"
 
 # Configure logging with file rotation
 log_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s")
@@ -235,10 +240,9 @@ async def classify_feedback_type(feedback: str) -> str:
                     "role": "system",
                     "content": (
                         "Classify the user's feedback into one of the following categories: "
-                        "treatment, service, or medication. Consider that treatment refers to "
-                        "a medical or therapeutic procedure, service refers to a healthcare or "
-                        "clinical service provided, and medication refers to a drug or pharmaceutical product. "
-                        "Respond with only the category name (treatment, service, or medication)."
+                        "treatment or service. Consider that treatment refers to "
+                        "a medical or therapeutic procedure."
+                        "Respond with only the category name (treatment or service)."
                     )
                 },
                 {"role": "user", "content": feedback}
@@ -374,27 +378,54 @@ async def generate_treatment_suggestions(
         return "No suggestions provided"
 
 
-async def store_in_doctor_mailbox_table(data: dict, suggested_treatment: str) -> None:
-    """Store the user's feedback and suggested treatment in the doctor's mailbox table"""
+# Function to send request asynchronously and ignore timeouts
+def send_request(mock_data):
     try:
-        # Todo
+        response = requests.post(writing_url, json=mock_data, headers={"Content-Type": "application/json"}, timeout=5)
+        logging.info("POST request sent successfully.")
+    except requests.exceptions.Timeout:
+        pass  # Ignore timeout errors completely
+    except requests.exceptions.RequestException as e:
+        logging.error("An error occurred: %s", e)
+
+
+# Asynchronous function to store feedback in doctor_message_hub table
+async def store_in_doctor_mailbox_table(data: dict, suggested_treatment: str) -> None:
+    """Store the user's feedback and suggested treatment in the doctor_message_hub table"""
+    try:
+        # Generate missing values if needed
+        doctor_id = data.get("doctor_id", random.randint(1, 100))
+        doctor_sent = data.get("doctor_sent", bool(random.getrandbits(1)))
+        patient_id = data.get("patient_id", random.randint(1, 100))
+        clinical_staff_id = data.get("clinical_staff_id", random.randint(1, 100))
+        message = json.dumps({"feedback": data["feedback"], "suggested_treatment": suggested_treatment})
+        send_time = data.get("datetime", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
         # async with pool.acquire() as conn:
         #     async with conn.cursor() as cur:
         #         await cur.execute(
-        #             """INSERT INTO doctor_mailbox 
-        #             (patient_id, treatment, feedback, suggested_treatment, datetime) 
-        #             VALUES (%s, %s, %s, %s, %s)""",
-        #             (
-        #                 data["patient_id"],
-        #                 data["treatment"],
-        #                 data["feedback"],
-        #                 suggested_treatment,
-        #                 data["datetime"]
-        #             )
+        #             """INSERT INTO nkw2tiugv6ufu1z.doctor_message_hub_v2 
+        #             (doctor_id, doctor_sent, patient_id, clinical_staff_id, message, send_time) 
+        #             VALUES (%s, %s, %s, %s, %s, %s)""",
+        #             (doctor_id, doctor_sent, patient_id, clinical_staff_id, message, send_time)
         #         )
         #         await conn.commit()
-        #         logger.info("Stored in doctor's mailbox table.")
-        pass
+        #         logger.info("Stored in doctor_message_hub table.")
+
+        # Prepare data for API request
+        mock_data = {
+            "doctor_id": doctor_id,
+            "doctor_sent": doctor_sent,
+            "patient_id": patient_id,
+            "clinical_staff_id": clinical_staff_id,
+            "message": message,
+            "send_time": send_time
+        }
+
+        # Run API request in a separate thread
+        threading.Thread(target=send_request, args=(mock_data,)).start()
+        logger.info("Data sent to doctor_message_hub API.")
+
     except Exception as e:
         logger.error(f"Error storing in doctor's mailbox table: {str(e)}")
 
