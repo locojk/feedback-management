@@ -327,7 +327,7 @@ async def store_feedback(data: dict) -> bool:
                     )
                 )
                 await conn.commit()
-                logger.info("Insert successful")
+                logger.info("Insert patient_feedback successful")
                 # return True
                 return {
                     "success": success,
@@ -382,7 +382,8 @@ async def generate_treatment_suggestions(
 def send_request(mock_data):
     try:
         response = requests.post(writing_url, json=mock_data, headers={"Content-Type": "application/json"}, timeout=5)
-        logging.info("POST request sent successfully.")
+        logger.info(response)
+        # logging.info("POST request sent successfully.")
     except requests.exceptions.Timeout:
         pass  # Ignore timeout errors completely
     except requests.exceptions.RequestException as e:
@@ -394,12 +395,25 @@ async def store_in_doctor_mailbox_table(data: dict, suggested_treatment: str) ->
     """Store the user's feedback and suggested treatment in the doctor_message_hub table"""
     try:
         # Generate missing values if needed
-        doctor_id = data.get("doctor_id", random.randint(1, 100))
-        doctor_sent = data.get("doctor_sent", bool(random.getrandbits(1)))
-        patient_id = data.get("patient_id", random.randint(1, 100))
-        clinical_staff_id = data.get("clinical_staff_id", random.randint(1, 100))
-        message = json.dumps({"feedback": data["feedback"], "suggested_treatment": suggested_treatment})
-        send_time = data.get("datetime", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        doctor_id = int(data.get("doctor_id", random.randint(1, 100)))
+        doctor_sent = int(data.get("doctor_sent", 0))
+        patient_id = int(data.get("patient_id", random.randint(1, 100)))
+        clinical_staff_id = int(data.get("clinical_staff_id", random.randint(1, 100)))
+        logger.info(type(suggested_treatment))
+        # message = json.dumps({
+        #     "feedback": data["feedback"],
+        #     "suggested_treatment": suggested_treatment
+        # }, ensure_ascii=False)
+        
+        # Build message as JSON string
+        message = {
+            "feedback": data["feedback"],
+            "suggested_treatment": suggested_treatment  # must be a dict
+        }
+        message = json.dumps(message, ensure_ascii=False)
+        logger.info(message)
+        logger.info(type(message))
+        # send_time = data.get("datetime", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         # async with pool.acquire() as conn:
         #     async with conn.cursor() as cur:
@@ -418,10 +432,9 @@ async def store_in_doctor_mailbox_table(data: dict, suggested_treatment: str) ->
             "doctor_sent": doctor_sent,
             "patient_id": patient_id,
             "clinical_staff_id": clinical_staff_id,
-            "message": message,
-            "send_time": send_time
+            "message": message
         }
-
+        logger.info("Data prepared for API request:" + str(mock_data))
         # Run API request in a separate thread
         threading.Thread(target=send_request, args=(mock_data,)).start()
         logger.info("Data sent to doctor_message_hub API.")
