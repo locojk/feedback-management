@@ -1,4 +1,58 @@
 
+# Patient Feedback Chatobot
+
+## Tech Stack
+- **Frontend**: React
+- **Backend**: FastAPI (located in `/api`)
+- **Deployment**:
+  - Backend: [Heroku](https://patient-feedback-backend-9e3b0b5a10ed.herokuapp.com)
+  - Frontend: TBD
+
+
+## Backend API
+
+### POST `/chatbot/`
+
+This is the main endpoint that receives user feedback and returns assistant responses.
+
+**Example:**
+```bash
+curl -X POST https://patient-feedback-backend-9e3b0b5a10ed.herokuapp.com/chatbot/ \
+     -H "Content-Type: application/json" \
+     -d '{"message": "1006. Treatment: Physical Therapy. Feedback: Excellent sessions but waiting times were too long."}'
+```
+Response:
+```
+{
+  "response": "Thank you for your feedback! We have notified the doctor.",
+  "assistant_response": "Immediate action recommended.",
+  "suggested_treatment": "Consult a doctor as soon as possible."
+}
+```
+
+## Project Structure
+```
+feedback-management/
+├── api/                    # FastAPI backend application
+│   ├── main.py             # Entry point for the backend server
+│   ├── requirements.txt    # Backend dependencies
+│   └── ...                 # Other backend-related files
+│
+├── src/                    # React frontend source code
+│   ├── components/         # Reusable UI components
+│   ├── pages/              # React pages/views
+│   ├── App.js              # Main app component
+│   └── index.js            # Entry point for React
+│
+├── public/                 # Static files for React (e.g., index.html)
+├── package.json            # Frontend dependencies and scripts
+├── README.md               # Project documentation
+└── ...                     # Other configuration files
+
+```
+
+
+
 ## Introduction
 
 ### **Feature Functions**  
