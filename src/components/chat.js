@@ -88,11 +88,13 @@ export default function Chat() {
       <CardContent className="p-4">
         <ScrollArea
           ref={scrollAreaRef}
-          className="h-[450px] overflow-y-auto w-full space-y-4 pr-4"
+          className="h-[450px] w-full pr-4"
         >
-          {messages.map((message) => (
-            <Bubble key={message.id} message={message} />
-          ))}
+          <div className="flex flex-col">
+            {messages.map((message) => (
+              <Bubble key={message.id} message={message} />
+            ))}
+          </div>
         </ScrollArea>
       </CardContent>
       <CardFooter className="border-t p-4">
