@@ -61,6 +61,7 @@ export default function Chat() {
 
     try {
       const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+      console.log("BASE_URL is:", BASE_URL);
       const response = await fetch(`${BASE_URL}/chatbot/`, {
       // const response = await fetch("http://localhost:8000/chatbot/textchatbot/", {
         method: "POST",
