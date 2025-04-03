@@ -1,6 +1,4 @@
-"use client";
-
-import { useEnsureRegeneratorRuntime } from "@/app/hook/useEnsureRegeneratorRuntime";
+import { useEnsureRegeneratorRuntime } from "../app/hook/useEnsureRegeneratorRuntime";
 import {
   Card,
   CardContent,
@@ -8,23 +6,21 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/card";
-import { ScrollArea } from "@/components/scroll-area";
-import { useSearchParams } from "next/navigation";
+} from "./card";
+import { ScrollArea } from "./scroll-area";
+import { useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import Bubble from "./chat/message";
 import SendForm from "./chat/chat-form";
 import LZString from "lz-string";
 
 export default function Chat() {
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const share = searchParams.get("share");
   const lzstring = LZString;
 
   // ✅ State to store messages and input
-  const [messages, setMessages] = useState<
-    { id: string; role: string; content: string }[]
-  >(
+  const [messages, setMessages] = useState(
     share && lzstring
       ? JSON.parse(lzstring.decompressFromEncodedURIComponent(share))
       : [
@@ -42,7 +38,7 @@ export default function Chat() {
 
   useEnsureRegeneratorRuntime();
 
-  const scrollAreaRef = useRef<null | HTMLDivElement>(null);
+  const scrollAreaRef = useRef(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -54,7 +50,7 @@ export default function Chat() {
   }, [messages]);
 
   // Function to send message to FastAPI
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event) {
     event.preventDefault();
     if (!input.trim()) return;
 
@@ -64,7 +60,7 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/chatbot/", {
+      const response = await fetch("http://localhost:8000/chatbot/textchatbot/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
@@ -82,24 +78,24 @@ export default function Chat() {
   }
 
   return (
-    <Card className="w-[440px]">
-      <CardHeader>
+    <Card className="w-[440px] mx-auto shadow-lg">
+      <CardHeader className="border-b">
         <div className="flex flex-row items-start justify-between max-w-[100%]">
-          <CardTitle className="text-lg">Chatbot</CardTitle>
+          <CardTitle className="text-xl font-bold">Chatbot</CardTitle>
         </div>
-        <CardDescription className="leading-3">Patient Feedback</CardDescription>
+        <CardDescription className="text-base">Patient Feedback</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <ScrollArea
           ref={scrollAreaRef}
-          className="h-[450px] overflow-y-auto w-full spacy-y-4 pr-4"
+          className="h-[450px] overflow-y-auto w-full space-y-4 pr-4"
         >
           {messages.map((message) => (
             <Bubble key={message.id} message={message} />
           ))}
         </ScrollArea>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="border-t p-4">
         <SendForm
           input={input}
           handleSubmit={handleSubmit}
@@ -109,4 +105,4 @@ export default function Chat() {
       </CardFooter>
     </Card>
   );
-}
+} 
