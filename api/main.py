@@ -84,7 +84,7 @@ async def shutdown():
         await pool.wait_closed()
         logger.info("Database pool closed")
 
-frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "*")
 
 app.add_middleware(
     CORSMiddleware,
