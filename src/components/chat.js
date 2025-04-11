@@ -1,13 +1,4 @@
 import { useEnsureRegeneratorRuntime } from "../app/hook/useEnsureRegeneratorRuntime";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./card";
-import { ScrollArea } from "./scroll-area";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import Bubble from "./chat/message";
@@ -38,14 +29,11 @@ export default function Chat() {
 
   useEnsureRegeneratorRuntime();
 
-  const scrollAreaRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
@@ -60,10 +48,7 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-      console.log("BASE_URL is:", BASE_URL);
-      const response = await fetch(`${BASE_URL}/chatbot/`, {
-      // const response = await fetch("http://localhost:8000/chatbot/textchatbot/", {
+      const response = await fetch("http://localhost:8000/chatbot/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
@@ -81,33 +66,27 @@ export default function Chat() {
   }
 
   return (
-    <Card className="w-[440px] mx-auto shadow-lg">
-      <CardHeader className="border-b">
-        <div className="flex flex-row items-start justify-between max-w-[100%]">
-          <CardTitle className="text-xl font-bold">Chatbot</CardTitle>
-        </div>
-        <CardDescription className="text-base">Patient Feedback</CardDescription>
-      </CardHeader>
-      <CardContent className="p-4">
-        <ScrollArea
-          ref={scrollAreaRef}
-          className="h-[450px] w-full pr-4"
-        >
-          <div className="flex flex-col">
-            {messages.map((message) => (
-              <Bubble key={message.id} message={message} />
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-      <CardFooter className="border-t p-4">
+    <div className="chat-wrapper">
+      <div className="chat-header">
+        <h1>Chatbot</h1>
+        <p>Patient Feedback</p>
+      </div>
+      
+      <div className="chat-messages">
+        {messages.map((message) => (
+          <Bubble key={message.id} message={message} />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="chat-input-area">
         <SendForm
           input={input}
           handleSubmit={handleSubmit}
           isLoading={isLoading}
           handleInputChange={(e) => setInput(e.target.value)}
         />
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 } 

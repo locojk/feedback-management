@@ -1,0 +1,51 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  padding: 8px 16px;
+  border: none;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Variants */
+.button-default {
+  background-color: #2563eb;
+  color: white;
+}
+
+.button-default:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.button-ghost {
+  background: transparent;
+  color: #4b5563;
+}
+
+.button-ghost:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+/* Sizes */
+.button-sm {
+  padding: 6px 12px;
+}
+
+.button-lg {
+  padding: 10px 20px;
+}
+
+.button-icon {
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+} 
